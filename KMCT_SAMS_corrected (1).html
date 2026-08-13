@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KMCTCTM SAMS</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box}
+ 
+:root{--blue:#123d76;--blue2:#2563eb;--green:#16a34a;--red:#dc2626;--bg:#eef3f8}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#0f172a}
+.hidden{display:none!important}
+button{cursor:pointer;border:0;font-weight:700}
+input,select,button{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
+label{display:block;margin:10px 0 6px;font-weight:700}
+.primary{background:var(--blue2);color:#fff}
+.success{background:var(--green);color:#fff}
+.danger{background:var(--red);color:#fff}
+.secondary{background:#e2e8f0;color:#0f172a}
+.login-screen{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;background:linear-gradient(135deg,#dbeafe,#eff6ff)}
+.login-card{max-width:430px;width:100%;background:white;border-radius:18px;padding:28px;box-shadow:0 15px 40px rgba(15,23,42,.18)}
+.login-card img{width:100%;max-height:120px;object-fit:contain;margin-bottom:16px}
+.login-card h2{text-align:center;color:var(--blue);margin-top:0}
+.message{min-height:22px;margin-top:10px;font-weight:700}
+header{background:white;padding:12px 18px;display:flex;gap:16px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+header img{width:330px;max-width:55%;height:70px;object-fit:contain}
+.header-title{flex:1}
+.header-title h1{margin:0;color:var(--blue);font-size:22px}
+.header-title p{margin:5px 0 0;color:#64748b}
+.userbox{text-align:right;font-size:14px}
+.userbox button{width:auto;margin-top:6px;padding:8px 14px}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:11px;background:var(--blue)}
+nav button{width:auto;color:white;background:transparent;padding:10px 15px}
+nav button.active{background:white;color:var(--blue)}
+.container{max-width:1200px;margin:22px auto;padding:0 14px}
+.page{display:none}
+.page.active{display:block}
+.card{background:white;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px rgba(15,23,42,.08)}
+.card h2{margin-top:0;color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;align-items:end}
+.summary{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
+.badge{padding:10px 15px;border-radius:20px;background:#e2e8f0;font-weight:700}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}
+th{background:#eff6ff;color:var(--blue)}
+.status-buttons{display:flex;gap:7px}
+.status-buttons button{width:auto;padding:7px 11px}
+.present{background:var(--green);color:#fff}
+.absent{background:var(--red);color:#fff}
+.inactive{background:#e5e7eb;color:#374151}
+.small{font-size:13px;color:#64748b;line-height:1.5}
+@media(max-width:650px){
+ header{display:block;text-align:center}
+ header img{max-width:100%;width:100%}
+ .userbox{text-align:center;margin-top:10px}
+}
+
+/* Mobile-first attendance layout */
+#pageAttendance .attendance-card-list{
+  display:none;
+}
+
+@media(max-width:700px){
+  #pageAttendance .table-wrap{
+    overflow:visible;
+  }
+
+  #pageAttendance table{
+    display:none;
+  }
+
+  #pageAttendance .attendance-card-list{
+    display:block;
+  }
+
+  .student-attendance-card{
+    background:#ffffff;
+    border:1px solid #dbe3ee;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:12px;
+    box-shadow:0 4px 12px rgba(15,23,42,.08);
+  }
+
+  .student-topline{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+
+  .student-roll{
+    min-width:58px;
+    font-size:13px;
+    font-weight:700;
+    color:#64748b;
+  }
+
+  .student-name{
+    flex:1;
+    font-size:17px;
+    line-height:1.35;
+    font-weight:700;
+    color:#0f172a;
+    text-align:left;
+  }
+
+  .attendance-toggle{
+    width:100%;
+    min-height:48px;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:800;
+  }
+
+  .attendance-toggle.present{
+    background:#16a34a;
+    color:#ffffff;
+  }
+
+  .attendance-toggle.absent{
+    background:#dc2626;
+    color:#ffffff;
+  }
+
+  #pageAttendance .summary{
+    position:sticky;
+    top:0;
+    z-index:5;
+    background:#ffffff;
+    padding:10px 0;
+  }
+}
+
+@media(min-width:701px){
+  #pageAttendance .attendance-card-list{
+    display:none!important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<section id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <img src="trt.png" alt="KMCT">
+<h2>
+  <span style="color:#0d6efd; font-family:'Georgia', serif;">KMCT</span>
+  VADAKARA SAMS
+  <br>
+  <span style="display:block; text-align:center;">Login</span>
+</h2>
+
+   
+
+
+
+
+
+
+    <label>Username</label>
+    <input id="loginUsername" value="admin">
+    <label>Password</label>
+    <input id="loginPassword" type="password" value="admin123">
+    <button class="primary" style="margin-top:16px" onclick="login()">Login</button>
+    <div id="loginMessage" class="message"></div>
+  </div>
+</section>
+
+<section id="app" class="hidden">
+<header>
+  <img src="trt.png" alt="KMCT">
+  <div class="header-title">
+    <h1>KMCT Smart Attendance Management System</h1>
+    <p>Student Management, Attendance and Reports</p>
+  </div>
+  <div class="userbox">
+    <div id="loggedUser"></div>
+    <button class="danger" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<nav>
+  <button id="tabStudents" class="active" onclick="showPage('students')">Students</button>
+  <button id="tabImport" onclick="showPage('import')">Import Excel</button>
+  <button id="tabAttendance" onclick="showPage('attendance')">Attendance</button>
+  <button id="tabReports" onclick="showPage('reports')">Reports</button>
+</nav>
+
+<div class="container">
+
+<section id="pageStudents" class="page active">
+  <div class="card">
+    <h2>Student Registration</h2>
+    <div class="grid">
+      <div><label>Department</label><select id="stuDepartment"></select></div>
+      <div><label>Semester</label><select id="stuSemester"></select></div>
+      <div><label>Admission Number</label><input id="stuAdmission"></div>
+      <div><label>Roll Number</label><input id="stuRoll"></div>
+      <div><label>Student Name</label><input id="stuName"></div>
+      <div><label>Gender</label><select id="stuGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div><button class="primary" onclick="addStudent()">Save Student</button></div>
+      <div><button class="secondary" onclick="loadStudents()">Refresh List</button></div>
+      <div><button class="danger" onclick="deleteClass()">Delete Class Students</button></div>
+    </div>
+    <div id="studentMessage" class="message"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="studentTitle">Registered Students</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sl.</th><th>Admission No.</th><th>Roll No.</th><th>Name</th><th>Gender</th></tr></thead>
+        <tbody id="studentTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="pageImport" class="page">
+  <div class="card">
+    <h2>Import Students from Excel</h2>
+    <p class="small">Required headings: Admission Number, Roll Number, Student Name, Department, Semester. Gender is optional.</p>
+    <div class="grid">
+      <div><label>Select Excel / CSV</label><input type="file" id="excelFile" accept=".xlsx,.xls,.csv"></div>
+      <div><button class="secondary" onclick="previewExcel()">Preview</button></div>
+      <div><button class="success" onclick="importExcel()">Import</button></div>
+      <div><button class="primary" onclick="downloadTemplate()">Download Template</button></div>
+    </div>
+    <div id="importMessage" class="message"></div>
+  </div>
+  <div class="card">
+    <h2>Preview</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sl.</th><th>Admission No.</th><th>Roll No.</th><th>Name</th><th>Department</th><th>Semester</th><th>Gender</th></tr></thead>
+        <tbody id="previewTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="pageAttendance" class="page">
+  <div class="card">
+    <h2>Mark Attendance</h2>
+    <div class="grid">
+      <div><label>Date</label><input type="date" id="attDate"></div>
+      <div><label>Department</label><select id="attDepartment"></select></div>
+      <div><label>Semester</label><select id="attSemester"></select></div>
+      <div><label>Subject</label><input id="attSubject"></div>
+      <div><label>Hour</label><select id="attHour"><option>Hour 1</option><option>Hour 2</option><option>Hour 3</option><option>Hour 4</option><option>Hour 5</option><option>Hour 6</option></select></div>
+      <div><button class="primary" onclick="loadAttendance()">Load Students</button></div>
+    </div>
+    <div id="attendanceMessage" class="message"></div>
+  </div>
+  <div class="card">
+    <div class="grid">
+      <button class="success" onclick="markAll('Present')">Mark All Present</button>
+      <button class="danger" onclick="markAll('Absent')">Mark All Absent</button>
+      <button class="primary" onclick="saveAttendance()">Save Attendance</button>
+    </div>
+    <div class="summary">
+      <span class="badge">Total: <span id="totalCount">0</span></span>
+      <span class="badge">Present: <span id="presentCount">0</span></span>
+      <span class="badge">Absent: <span id="absentCount">0</span></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sl.</th><th>Roll No.</th><th>Name</th><th>Status</th></tr></thead>
+        <tbody id="attendanceTable"></tbody>
+      </table>
+    </div>
+    <div id="attendanceCardList" class="attendance-card-list"></div>
+  </div>
+</section>
+
+<section id="pageReports" class="page">
+  <div class="card">
+    <h2>Weekly / Monthly Attendance Report</h2>
+    <div class="grid">
+      <div><label>Department</label><select id="repDepartment"></select></div>
+      <div><label>Semester</label><select id="repSemester"></select></div>
+      <div><label>Subject (optional)</label><input id="repSubject"></div>
+      <div><label>From Date</label><input type="date" id="repFrom"></div>
+      <div><label>To Date</label><input type="date" id="repTo"></div>
+      <div><button class="primary" onclick="generateReport()">Generate Report</button></div>
+      <div><button class="success" onclick="downloadReport()">Download CSV</button></div>
+      <div><button class="secondary" onclick="window.print()">Print / Save PDF</button></div>
+    </div>
+    <div id="reportMessage" class="message"></div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Roll No.</th><th>Student Name</th><th>Present</th><th>Absent</th><th>Total</th><th>Attendance %</th></tr></thead>
+        <tbody id="reportTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+</section>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgAt5XudrdmXCIXPXpgxRxOXgjs2Ao9LHRiz16eXDAf2eg-X-947SKqh-zyXTTQhBV/exec";
+let TOKEN = "";
+let CURRENT_USER = "";
+let CURRENT_ROLE = "";
+let importedRows = [];
+let attendanceRows = [];
+let reportRows = [];
+
+const $ = id => document.getElementById(id);
+
+function localDateString(date = new Date()){
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+const departments = [
+  "BTech Computer Science Engineering",
+  "BTech Computer Science and Business Systems",
+  "BTech Electronics and Communication",
+  "BTech Artificial Intelligence and Data Science",
+  "BCA","BBA","MBA"
+];
+const semesters = ["S1","S2","S3","S4","S5","S6","S7","S8"];
+
+function fill(id,values){$(id).innerHTML=values.map(v=>`<option>${esc(v)}</option>`).join("")}
+["stuDepartment","attDepartment","repDepartment"].forEach(id=>fill(id,departments));
+["stuSemester","attSemester","repSemester"].forEach(id=>fill(id,semesters));
+
+$("attDate").value=localDateString();
+const today=new Date();
+$("repTo").value=localDateString(today);
+const weekAgo=new Date(today);
+weekAgo.setDate(today.getDate()-6);
+$("repFrom").value=localDateString(weekAgo);
+
+function ensureURL(){
+  if(SCRIPT_URL.includes("PASTE_YOUR")){alert("Paste your Apps Script /exec URL in index.html.");return false}
+  return true
+}
+
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    if(!ensureURL())return reject(new Error("Missing URL"));
+
+    const cb="cb_"+Date.now()+"_"+Math.floor(Math.random()*10000);
+    const s=document.createElement("script");
+    let timer;
+
+    const cleanup=()=>{
+      clearTimeout(timer);
+      try{ delete window[cb]; }catch(_){ window[cb]=undefined; }
+      if(s.parentNode)s.remove();
+    };
+
+    window[cb]=data=>{
+      cleanup();
+      resolve(data);
+    };
+
+    const secured={...params,callback:cb};
+    if(TOKEN&&params.action!=="login")secured.token=TOKEN;
+
+    s.src=SCRIPT_URL+"?"+new URLSearchParams(secured);
+    s.onerror=()=>{
+      cleanup();
+      reject(new Error("Unable to contact the server."));
+    };
+
+    timer=setTimeout(()=>{
+      cleanup();
+      reject(new Error("Server request timed out."));
+    },15000);
+
+    document.body.appendChild(s);
+  })
+}
+
+async function post(payload,msgId){
+  if(!ensureURL())return false;
+
+  const msg=$(msgId);
+  msg.textContent="Submitting...";
+  msg.style.color="#2563eb";
+
+  try{
+    // Apps Script web apps may not expose a readable cross-origin POST response.
+    // We therefore send the POST and verify important writes separately.
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({...payload,token:TOKEN})
+    });
+
+    msg.textContent="Request sent to server.";
+    msg.style.color="#2563eb";
+    return true;
+  }catch(e){
+    msg.textContent="Submission failed: "+e.message;
+    msg.style.color="#b91c1c";
+    return false;
+  }
+}
+
+function delay(ms){
+  return new Promise(resolve=>setTimeout(resolve,ms));
+}
+
+async function login(){
+  const loginMessage=$("loginMessage");
+  loginMessage.textContent="Checking...";
+  loginMessage.style.color="#2563eb";
+
+  try{
+    const r=await jsonp({
+      action:"login",
+      username:$("loginUsername").value.trim(),
+      password:$("loginPassword").value
+    });
+
+    if(!r.success)throw new Error(r.message||"Login failed");
+
+    TOKEN=r.token;
+    CURRENT_USER=r.username;
+    CURRENT_ROLE=r.role||"";
+
+    $("loginScreen").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("loggedUser").textContent="Logged in as: "+CURRENT_USER+(CURRENT_ROLE?" ("+CURRENT_ROLE+")":"");
+    loginMessage.textContent="";
+  }catch(e){
+    loginMessage.textContent=e.message;
+    loginMessage.style.color="#b91c1c";
+  }
+}
+
+function logout(){
+  TOKEN="";
+  CURRENT_USER="";
+  CURRENT_ROLE="";
+  $("app").classList.add("hidden");
+  $("loginScreen").classList.remove("hidden");
+  $("loginPassword").value="";
+  $("loginMessage").textContent="";
+}
+
+function showPage(name){
+  const pages={students:"pageStudents",import:"pageImport",attendance:"pageAttendance",reports:"pageReports"};
+  const tabs={students:"tabStudents",import:"tabImport",attendance:"tabAttendance",reports:"tabReports"};
+  Object.keys(pages).forEach(k=>{document.getElementById(pages[k]).classList.toggle("active",k===name);document.getElementById(tabs[k]).classList.toggle("active",k===name)})
+}
+
+async function addStudent(){
+  const p={action:"registerStudent",department:stuDepartment.value,semester:stuSemester.value,admissionNo:stuAdmission.value.trim(),roll:stuRoll.value.trim(),name:stuName.value.trim(),gender:stuGender.value};
+  if(!p.admissionNo||!p.roll||!p.name){studentMessage.textContent="Admission number, roll number and name are required.";studentMessage.style.color="#b91c1c";return}
+  if(await post(p,"studentMessage"))setTimeout(loadStudents,1300)
+}
+
+async function loadStudents(){
+  studentMessage.textContent="Loading...";
+  try{
+    const r=await jsonp({action:"getStudents",department:$("stuDepartment").value,semester:$("stuSemester").value});
+    if(!r.success)throw new Error(r.message||"Unable to load students.");
+    const rows=r.students||[];
+    studentTitle.textContent=`Registered Students – ${stuDepartment.value} ${stuSemester.value}`;
+    studentTable.innerHTML=rows.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s.admissionNo)}</td><td>${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${esc(s.gender||"")}</td></tr>`).join("");
+    studentMessage.textContent=`${rows.length} student(s) loaded.`;studentMessage.style.color="#15803d"
+  }catch(e){studentMessage.textContent=e.message;studentMessage.style.color="#b91c1c"}
+}
+
+async function deleteClass(){
+  if(!confirm(`Delete all students from ${stuDepartment.value} ${stuSemester.value}?`))return;
+  try{
+    const r=await jsonp({action:"deleteClassStudents",department:$("stuDepartment").value,semester:$("stuSemester").value});
+    if(!r.success)throw new Error(r.message||"Delete failed.");
+    $("studentMessage").textContent=r.message||"Completed.";
+    $("studentMessage").style.color="#15803d";
+    await loadStudents()
+  }catch(e){studentMessage.textContent=e.message;studentMessage.style.color="#b91c1c"}
+}
+
+function norm(v){return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]/g,"")}
+function getVal(row,names){for(const k of Object.keys(row))if(names.includes(norm(k)))return row[k];return""}
+
+function previewExcel(){
+  const f=excelFile.files[0];
+  if(!f){importMessage.textContent="Select an Excel file.";return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{defval:""});
+      importedRows=data.map(row=>({
+        admissionNo:String(getVal(row,["admissionnumber","admissionno","admission"])).trim(),
+        roll:String(getVal(row,["rollnumber","rollno","roll"])).trim(),
+        name:String(getVal(row,["studentname","name"])).trim(),
+        department:String(getVal(row,["department","stream","course"])).trim(),
+        semester:String(getVal(row,["semester","sem"])).trim(),
+        gender:String(getVal(row,["gender","sex"])).trim()
+      })).filter(s=>s.admissionNo&&s.roll&&s.name&&s.department&&s.semester);
+      previewTable.innerHTML=importedRows.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s.admissionNo)}</td><td>${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${esc(s.department)}</td><td>${esc(s.semester)}</td><td>${esc(s.gender)}</td></tr>`).join("");
+      importMessage.textContent=`${importedRows.length} valid row(s) found.`;importMessage.style.color="#15803d"
+    }catch(err){importMessage.textContent="Unable to read file.";importMessage.style.color="#b91c1c"}
+  };
+  reader.readAsArrayBuffer(f)
+}
+async function importExcel(){
+  if(!importedRows.length){
+    $("importMessage").textContent="Preview a valid file first.";
+    $("importMessage").style.color="#b91c1c";
+    return;
+  }
+
+  const sent=await post(
+    {action:"importStudents",students:importedRows},
+    "importMessage"
+  );
+
+  if(sent){
+    $("importMessage").textContent="Import request sent. Open Students and refresh the required class to verify imported records.";
+    $("importMessage").style.color="#15803d";
+  }
+}
+function downloadTemplate(){
+  const data=[{"Admission Number":"ADM001","Roll Number":"1","Student Name":"Student One","Department":"BTech Computer Science Engineering","Semester":"S1","Gender":"Female"}];
+  const ws=XLSX.utils.json_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Students");XLSX.writeFile(wb,"Student_Import_Template.xlsx")
+}
+
+async function loadAttendance(){
+  attendanceMessage.textContent="Loading...";
+  try{
+    const r=await jsonp({action:"getStudents",department:$("attDepartment").value,semester:$("attSemester").value});
+    if(!r.success)throw new Error(r.message||"Unable to load students.");
+    attendanceRows=(r.students||[]).map(s=>({...s,status:"Present"}));
+    renderAttendance();
+    attendanceMessage.textContent=`${attendanceRows.length} student(s) loaded.`;attendanceMessage.style.color="#15803d"
+  }catch(e){attendanceMessage.textContent=e.message;attendanceMessage.style.color="#b91c1c"}
+}
+function setStatus(i,status){attendanceRows[i].status=status;renderAttendance()}
+function markAll(status){attendanceRows=attendanceRows.map(s=>({...s,status}));renderAttendance()}
+function renderAttendance(){
+  attendanceTable.innerHTML=attendanceRows.map((s,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${esc(s.roll)}</td>
+      <td>${esc(s.name)}</td>
+      <td>
+        <div class="status-buttons">
+          <button class="${s.status==="Present"?"present":"inactive"}" onclick="setStatus(${i},'Present')">Present</button>
+          <button class="${s.status==="Absent"?"absent":"inactive"}" onclick="setStatus(${i},'Absent')">Absent</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  attendanceCardList.innerHTML=attendanceRows.map((s,i)=>`
+    <div class="student-attendance-card">
+      <div class="student-topline">
+        <div class="student-roll">Roll ${esc(s.roll)}</div>
+        <div class="student-name">${esc(s.name)}</div>
+      </div>
+      <button
+        class="attendance-toggle ${s.status==="Present"?"present":"absent"}"
+        onclick="toggleStudentStatus(${i})">
+        ${s.status==="Present"?"✓ Present":"✕ Absent"}
+      </button>
+    </div>
+  `).join("");
+
+  totalCount.textContent=attendanceRows.length;
+  presentCount.textContent=attendanceRows.filter(s=>s.status==="Present").length;
+  absentCount.textContent=attendanceRows.filter(s=>s.status==="Absent").length;
+}
+
+function toggleStudentStatus(index){
+  attendanceRows[index].status=
+    attendanceRows[index].status==="Present"
+      ?"Absent"
+      :"Present";
+
+  renderAttendance();
+}
+async function saveAttendance(){
+  const message=$("attendanceMessage");
+
+  if(!attendanceRows.length){
+    message.textContent="Load students first.";
+    message.style.color="#b91c1c";
+    return;
+  }
+
+  const subject=$("attSubject").value.trim();
+
+  if(!subject){
+    message.textContent="Enter subject.";
+    message.style.color="#b91c1c";
+    return;
+  }
+
+  if(!$("attDate").value){
+    message.textContent="Select attendance date.";
+    message.style.color="#b91c1c";
+    return;
+  }
+
+  message.textContent="Checking previous attendance...";
+  message.style.color="#2563eb";
+
+  try{
+    const check=await jsonp({
+      action:"checkAttendanceExists",
+      department:$("attDepartment").value,
+      semester:$("attSemester").value,
+      date:$("attDate").value,
+      hour:$("attHour").value
+    });
+
+    if(!check.success){
+      throw new Error(check.message||"Unable to check attendance.");
+    }
+
+    if(check.exists){
+      const warning=
+        "Attendance is already entered for "+$("attHour").value+
+        ". Subject: "+(check.subject||"");
+
+      message.textContent="⚠ "+warning;
+      message.style.color="#b91c1c";
+
+      alert(
+        "Attendance already entered!\n\n"+
+        "Class: "+$("attDepartment").value+" "+$("attSemester").value+"\n"+
+        "Date: "+$("attDate").value+"\n"+
+        "Hour: "+$("attHour").value+"\n"+
+        "Subject: "+(check.subject||"")
+      );
+      return;
+    }
+
+    const submitted=await post({
+      action:"saveAttendance",
+      date:$("attDate").value,
+      department:$("attDepartment").value,
+      semester:$("attSemester").value,
+      subject:subject,
+      hour:$("attHour").value,
+      attendance:attendanceRows,
+      enteredBy:CURRENT_USER,
+      enteredByRole:CURRENT_ROLE
+    },"attendanceMessage");
+
+    if(!submitted)return;
+
+    message.textContent="Verifying saved attendance...";
+    message.style.color="#2563eb";
+
+    // Give Apps Script a short moment to finish writing, then verify via JSONP.
+    await delay(1200);
+
+    const verify=await jsonp({
+      action:"checkAttendanceExists",
+      department:$("attDepartment").value,
+      semester:$("attSemester").value,
+      date:$("attDate").value,
+      hour:$("attHour").value
+    });
+
+    if(!verify.success){
+      throw new Error(verify.message||"Unable to verify saved attendance.");
+    }
+
+    if(!verify.exists){
+      throw new Error("The save request was sent, but the attendance could not be verified. Check the Apps Script deployment and Google Sheet.");
+    }
+
+    message.textContent="Attendance saved successfully. Subject: "+(verify.subject||subject);
+    message.style.color="#15803d";
+
+  }catch(error){
+    message.textContent=error.message;
+    message.style.color="#b91c1c";
+  }
+}
+
+async function generateReport(){
+  reportMessage.textContent="Generating...";
+  try{
+    const r=await jsonp({action:"getReport",department:repDepartment.value,semester:repSemester.value,subject:repSubject.value.trim(),from:repFrom.value,to:repTo.value});
+    if(!r.success)throw new Error(r.message||"Report failed");
+    reportRows=r.rows||[];
+    reportTable.innerHTML=reportRows.map(x=>`<tr><td>${esc(x.roll)}</td><td>${esc(x.name)}</td><td>${x.present}</td><td>${x.absent}</td><td>${x.total}</td><td>${x.percentage}%</td></tr>`).join("");
+    reportMessage.textContent=`${reportRows.length} student(s) in report.`;reportMessage.style.color="#15803d"
+  }catch(e){reportMessage.textContent=e.message;reportMessage.style.color="#b91c1c"}
+}
+function downloadReport(){
+  if(!reportRows.length){alert("Generate report first.");return}
+  const rows=[["Roll Number","Student Name","Present","Absent","Total","Attendance Percentage"],...reportRows.map(r=>[r.roll,r.name,r.present,r.absent,r.total,r.percentage])];
+  const csv=rows.map(row=>row.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=`Attendance_Report_${repFrom.value}_to_${repTo.value}.csv`;a.click();URL.revokeObjectURL(a.href)
+}
+
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+$("stuDepartment").addEventListener("change",loadStudents);
+$("stuSemester").addEventListener("change",loadStudents);
+</script>
+</body>
+</html>
