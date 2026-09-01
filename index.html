@@ -331,7 +331,7 @@ const departments = [
   "BTech Artificial Intelligence and Data Science",
   "BCA","BBA","MBA"
 ];
-const semesters = ["S1","S2","S3","S4","S5","S6","S7","S8"];
+const semesters = ["S1","S3","S2","S4"];
 
 function fill(id,values){$(id).innerHTML=values.map(v=>`<option>${esc(v)}</option>`).join("")}
 ["stuDepartment","attDepartment","repDepartment"].forEach(id=>fill(id,departments));
