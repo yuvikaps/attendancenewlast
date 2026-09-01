@@ -349,26 +349,18 @@ function ensureURL(){
 
   if(!url || url.includes("PASTE_YOUR_NEW")){
     alert(
-      "Google Apps Script Web App URL is not configured.
-
-"+
-      "Deploy Code.gs as a Web App, copy the URL ending in /exec, "+
+      "Google Apps Script Web App URL is not configured.\\n\\n" +
+      "Deploy Code.gs as a Web App, copy the URL ending in /exec, " +
       "then paste it into SCRIPT_URL in index.html."
     );
     return false;
   }
 
-  if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/.test(url)){
+  if(!url.startsWith("https://script.google.com/macros/s/") || !url.includes("/exec")){
     alert(
-      "SCRIPT_URL is not a valid Google Apps Script Web App URL.
-
-"+
-      "It must begin with:
-https://script.google.com/macros/s/
-
-"+
-      "and end with:
-/exec"
+      "SCRIPT_URL is not a valid Google Apps Script Web App URL.\\n\\n" +
+      "It must begin with:\\nhttps://script.google.com/macros/s/\\n\\n" +
+      "and contain /exec"
     );
     return false;
   }
