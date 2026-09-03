@@ -142,14 +142,6 @@ th{background:#eff6ff;color:var(--blue)}
 }
 
 </style>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#123d76">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="KMCT SAMS">
-<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 
@@ -304,7 +296,7 @@ th{background:#eff6ff;color:var(--blue)}
   <div class="card">
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Subject</th><th>Roll No.</th><th>Student Name</th><th>Present</th><th>Absent</th><th>Total</th><th>Attendance %</th></tr></thead>
+        <thead><tr><th>Roll No.</th><th>Student Name</th><th>Present</th><th>Absent</th><th>Total</th><th>Attendance %</th></tr></thead>
         <tbody id="reportTable"></tbody>
       </table>
     </div>
@@ -762,13 +754,13 @@ async function generateReport(){
     const r=await jsonp({action:"getReport",department:repDepartment.value,semester:repSemester.value,subject:repSubject.value.trim(),from:repFrom.value,to:repTo.value});
     if(!r.success)throw new Error(r.message||"Report failed");
     reportRows=r.rows||[];
-    reportTable.innerHTML=reportRows.map(x=>`<tr><td>${esc(x.subject||"")}</td><td>${esc(x.roll)}</td><td>${esc(x.name)}</td><td>${x.present}</td><td>${x.absent}</td><td>${x.total}</td><td>${x.percentage}%</td></tr>`).join("");
+    reportTable.innerHTML=reportRows.map(x=>`<tr><td>${esc(x.roll)}</td><td>${esc(x.name)}</td><td>${x.present}</td><td>${x.absent}</td><td>${x.total}</td><td>${x.percentage}%</td></tr>`).join("");
     reportMessage.textContent=`${reportRows.length} student(s) in report.`;reportMessage.style.color="#15803d"
   }catch(e){reportMessage.textContent=e.message;reportMessage.style.color="#b91c1c"}
 }
 function downloadReport(){
   if(!reportRows.length){alert("Generate report first.");return}
-  const rows=[["Subject","Roll Number","Student Name","Present","Absent","Total","Attendance Percentage"],...reportRows.map(r=>[r.subject||"",r.roll,r.name,r.present,r.absent,r.total,r.percentage])];
+  const rows=[["Roll Number","Student Name","Present","Absent","Total","Attendance Percentage"],...reportRows.map(r=>[r.roll,r.name,r.present,r.absent,r.total,r.percentage])];
   const csv=rows.map(row=>row.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=`Attendance_Report_${repFrom.value}_to_${repTo.value}.csv`;a.click();URL.revokeObjectURL(a.href)
 }
@@ -776,16 +768,6 @@ function downloadReport(){
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 $("stuDepartment").addEventListener("change",loadStudents);
 $("stuSemester").addEventListener("change",loadStudents);
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(err => {
-      console.log('Service worker registration failed:', err);
-    });
-  });
-}
 </script>
 </body>
 </html>
